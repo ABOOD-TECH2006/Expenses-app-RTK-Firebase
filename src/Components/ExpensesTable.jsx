@@ -1,53 +1,96 @@
-// ExpensesTable.js
-// This file displays the list of expenses and allows deleting them.
-// When delete is clicked, it deletes from Firebase AND Redux.
-
-import { useSelector, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import { deleteExpenseFirebase } from "../redux/store";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
+  IconButton,
+  Skeleton,
+} from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 
-const ExpensesTable = () => {
-  // Get expenses from Redux state
-  const expenses = useSelector((state) => state.expenses.items);
+const ExpensesTable = ({ Expenses = [], loading }) => {
   const dispatch = useDispatch();
 
-  // Delete handler
   const onDeleteHandler = (firebaseId) => {
     dispatch(deleteExpenseFirebase(firebaseId));
   };
 
   return (
-    <div className="bottom-section">
-      <table>
-        <thead>
-          <tr>
-            <th>Title</th>
-            <th>Date</th>
-            <th>Value</th>
-            <th>Description</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          {expenses.map((expense) => (
-            <tr key={expense.firebaseId}>
-              <td>{expense.title}</td>
-              <td>{expense.date}</td>
-              <td>{expense.value}</td>
-              <td>{expense.description}</td>
-              <td>
-                <button
-                  className="DeleteButton"
-                  onClick={() => onDeleteHandler(expense.firebaseId)}
+    <TableContainer
+      component={Paper}
+      elevation={6}
+      sx={{ borderRadius: 3, boxShadow: 6, border: "2px solid #6776af" }}
+    >
+      <Table>
+        <TableHead>
+          <TableRow sx={{ backgroundColor: "#f0f4ff" }}>
+            <TableCell sx={{ fontWeight: "bold", color: "#273685" }}>
+              Title
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "#273685" }}>
+              Date
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "#273685" }}>
+              Value
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "#273685" }}>
+              Description
+            </TableCell>
+            <TableCell sx={{ fontWeight: "bold", color: "#273685" }}>
+              Action
+            </TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {loading
+            ? Array(5)
+                .fill(0)
+                .map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton variant="text" width="80%" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" width="60%" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" width="50%" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="text" width="70%" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton variant="circular" width={40} height={40} />
+                    </TableCell>
+                  </TableRow>
+                ))
+            : Expenses.map((expense) => (
+                <TableRow
+                  key={expense.firebaseId}
+                  sx={{ "&:hover": { backgroundColor: "#f9f9ff" } }}
                 >
-                  Delete
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+                  <TableCell>{expense.title}</TableCell>
+                  <TableCell>{expense.date}</TableCell>
+                  <TableCell>{expense.value}</TableCell>
+                  <TableCell>{expense.description}</TableCell>
+                  <TableCell>
+                    <IconButton
+                      color="error"
+                      onClick={() => onDeleteHandler(expense.firebaseId)}
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
+        </TableBody>
+      </Table>
+    </TableContainer>
   );
 };
 

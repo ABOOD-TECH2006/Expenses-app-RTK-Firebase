@@ -1,86 +1,134 @@
-// ExpensesForm.js
-// This component handles the form to add a new expense.
-// It sends data to Firebase (POST), then adds it to Redux.
-
-import { useRef } from "react";
+// ExpensesForm.jsx
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useDispatch } from "react-redux";
 import { addExpense } from "../redux/store";
 import axios from "axios";
+import toast, { Toaster } from "react-hot-toast";
+import { Box, TextField, Button, Skeleton } from "@mui/material";
+
+const FIREBASE_URL =
+  "https://expenses-rtk-app-default-rtdb.firebaseio.com/expenses.json";
 
 const ExpensesForm = () => {
-  const TitleRef = useRef();
-  const DateRef = useRef();
-  const ValueRef = useRef();
-  const DescriptionRef = useRef();
-
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(false); // skeleton toggle
 
-  const onSubmitHandler = async (e) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm();
 
-    if (
-      !TitleRef.current.value ||
-      !DateRef.current.value ||
-      !ValueRef.current.value ||
-      !DescriptionRef.current.value
-    ) {
-      return alert("Please fill out all fields.");
+  const onSubmit = async (data) => {
+    setLoading(true); // start skeleton
+    try {
+      const expense = {
+        id: Date.now(),
+        ...data,
+      };
+
+      await axios.post(FIREBASE_URL, expense);
+
+      dispatch(addExpense(expense));
+      toast.success("Expense added successfully!");
+
+      reset();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add expense.");
+    } finally {
+      setLoading(false); // stop skeleton
     }
-
-    // Expense object
-    const expense = {
-      title: TitleRef.current.value,
-      date: DateRef.current.value,
-      value: ValueRef.current.value,
-      description: DescriptionRef.current.value,
-    };
-
-    // Send expense to Firebase
-    const response = await axios.post(
-      "https://expenses-rtk-app-default-rtdb.firebaseio.com/expenses.json",
-      expense
-    );
-
-    const firebaseId = response.data.name; // Firebase ID returned
-
-    // Add to Redux
-    dispatch(addExpense({ firebaseId, ...expense }));
-
-    // Clear inputs
-    TitleRef.current.value = "";
-    DateRef.current.value = "";
-    ValueRef.current.value = "";
-    DescriptionRef.current.value = "";
   };
 
   return (
-    <form onSubmit={onSubmitHandler}>
-      <div className="form-row">
-        <div className="form-group">
-          <label>Title</label>
-          <input type="text" ref={TitleRef} placeholder="Expense title" />
-        </div>
+    <Box
+      component="form"
+      onSubmit={handleSubmit(onSubmit)}
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+    >
+      <Toaster position="top-right" />
 
-        <div className="form-group">
-          <label>Date</label>
-          <input type="date" ref={DateRef} />
-        </div>
-      </div>
-
-      <div className="form-row">
-        <div className="form-group">
-          <label>Value</label>
-          <input type="number" ref={ValueRef} placeholder="Amount" />
-        </div>
-
-        <div className="form-group">
-          <label>Description</label>
-          <input type="text" ref={DescriptionRef} placeholder="About expense" />
-        </div>
-      </div>
-
-      <button className="save-btn">Save</button>
-    </form>
+      {loading ? (
+        <>
+          {/* Skeletons for the inputs */}
+          <Skeleton
+            variant="rectangular"
+            height={56}
+            animation="wave"
+            sx={{ mb: 2 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={56}
+            animation="wave"
+            sx={{ mb: 2 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={56}
+            animation="wave"
+            sx={{ mb: 2 }}
+          />
+          <Skeleton
+            variant="rectangular"
+            height={56}
+            animation="wave"
+            sx={{ mb: 2 }}
+          />
+          {/* Skeleton for the button */}
+          <Skeleton
+            variant="rectangular"
+            height={48}
+            width={120}
+            animation="wave"
+            sx={{ mt: 2 }}
+          />
+        </>
+      ) : (
+        <>
+          <TextField
+            label="Title"
+            {...register("title", { required: "Title is required" })}
+            error={!!errors.title}
+            helperText={errors.title?.message}
+          />
+          <TextField
+            label="Date"
+            type="date"
+            InputLabelProps={{ shrink: true }}
+            {...register("date", { required: "Date is required" })}
+            error={!!errors.date}
+            helperText={errors.date?.message}
+          />
+          <TextField
+            label="Value"
+            type="number"
+            {...register("value", { required: "Value is required", min: 0 })}
+            error={!!errors.value}
+            helperText={errors.value?.message}
+          />
+          <TextField
+            label="Description"
+            {...register("description", {
+              required: "Description is required",
+            })}
+            error={!!errors.description}
+            helperText={errors.description?.message}
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            sx={{ mt: 2 }}
+          >
+            Save
+          </Button>
+        </>
+      )}
+    </Box>
   );
 };
 
