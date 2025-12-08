@@ -1,35 +1,52 @@
+// ExpensesForm.js
+// This component handles the form to add a new expense.
+// It sends data to Firebase (POST), then adds it to Redux.
+
 import { useRef } from "react";
 import { useDispatch } from "react-redux";
 import { addExpense } from "../redux/store";
+import axios from "axios";
 
-let ExpensesForm = () => {
+const ExpensesForm = () => {
   const TitleRef = useRef();
   const DateRef = useRef();
   const ValueRef = useRef();
   const DescriptionRef = useRef();
+
   const dispatch = useDispatch();
 
-  const onSubmitHandler = (e) => {
-      
+  const onSubmitHandler = async (e) => {
     e.preventDefault();
+
     if (
       !TitleRef.current.value ||
       !DateRef.current.value ||
       !ValueRef.current.value ||
       !DescriptionRef.current.value
     ) {
-      return alert("Enter required info");
+      return alert("Please fill out all fields.");
     }
 
-   let expense = {
-     id: Date.now(),
-     title: TitleRef.current.value,
-     date: DateRef.current.value,
-     value: ValueRef.current.value,
-     description: DescriptionRef.current.value,
-   };
-    dispatch(addExpense(expense));
+    // Expense object
+    const expense = {
+      title: TitleRef.current.value,
+      date: DateRef.current.value,
+      value: ValueRef.current.value,
+      description: DescriptionRef.current.value,
+    };
 
+    // Send expense to Firebase
+    const response = await axios.post(
+      "https://expenses-rtk-app-default-rtdb.firebaseio.com/expenses.json",
+      expense
+    );
+
+    const firebaseId = response.data.name; // Firebase ID returned
+
+    // Add to Redux
+    dispatch(addExpense({ firebaseId, ...expense }));
+
+    // Clear inputs
     TitleRef.current.value = "";
     DateRef.current.value = "";
     ValueRef.current.value = "";
@@ -40,27 +57,29 @@ let ExpensesForm = () => {
     <form onSubmit={onSubmitHandler}>
       <div className="form-row">
         <div className="form-group">
-          <label htmlFor="title">Title</label>
-          <input type="text" id="title" placeholder="Title" ref={TitleRef} />
+          <label>Title</label>
+          <input type="text" ref={TitleRef} placeholder="Expense title" />
         </div>
+
         <div className="form-group">
-          <label htmlFor="date">Date</label>
-          <input type="date" id="date" ref={DateRef} />
+          <label>Date</label>
+          <input type="date" ref={DateRef} />
         </div>
       </div>
+
       <div className="form-row">
         <div className="form-group">
-          <label htmlFor="value">Value</label>
-          <input type="number" id="value" ref={ValueRef} />
+          <label>Value</label>
+          <input type="number" ref={ValueRef} placeholder="Amount" />
         </div>
+
         <div className="form-group">
-          <label htmlFor="description">Description</label>
-          <input type="text" id="description" ref={DescriptionRef} />
+          <label>Description</label>
+          <input type="text" ref={DescriptionRef} placeholder="About expense" />
         </div>
       </div>
-      <button type="submit" className="save-btn">
-        Save
-      </button>
+
+      <button className="save-btn">Save</button>
     </form>
   );
 };
