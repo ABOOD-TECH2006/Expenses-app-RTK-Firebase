@@ -10,7 +10,7 @@ import { Box, TextField, Button, Skeleton } from "@mui/material";
 const FIREBASE_URL =
   "https://expenses-rtk-app-default-rtdb.firebaseio.com/expenses.json";
 
-const ExpensesForm = () => {
+const ExpensesForm = ({isloading}) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false); // skeleton toggle
 
@@ -25,7 +25,7 @@ const ExpensesForm = () => {
     setLoading(true); // start skeleton
     try {
       const expense = {
-        id: Date.now(),
+        // id: Date.now(),
         ...data,
       };
 
@@ -51,7 +51,7 @@ const ExpensesForm = () => {
     >
       <Toaster position="top-right" />
 
-      {loading ? (
+      {loading || isloading ? (
         <>
           {/* Skeletons for the inputs */}
           <Skeleton
@@ -119,7 +119,6 @@ const ExpensesForm = () => {
             helperText={errors.description?.message}
           />
           <Button
-          
             type="submit"
             variant="contained"
             color="primary"

@@ -20,6 +20,7 @@ const ExpensesRow = ({ expense }) => {
       confirmButtonText: "Yes, delete it!",
       cancelButtonText: "Cancel",
       showLoaderOnConfirm: true,
+      showLoaderOnDeny:true,
       preConfirm: async () => {
         try {
           await dispatch(deleteExpenseFirebase(firebaseId)); // بدون unwrap

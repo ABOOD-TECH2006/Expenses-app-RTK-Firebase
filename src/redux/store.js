@@ -19,10 +19,14 @@ export const fetchExpenses = createAsyncThunk(
   async () => {
     const response = await axios.get(`${FIREBASE_URL}.json`);
     const data = response.data;
+console.log(data);
+
     if (!data) return [];
     return Object.keys(data).map((key) => ({
+      
       firebaseId: key,
       ...data[key],
+      
     }));
   }
 );

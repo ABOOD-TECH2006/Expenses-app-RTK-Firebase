@@ -65,7 +65,7 @@ const App = () => {
         </Box>
       </Box>
 
-      <ExpensesForm loading={isLoading} />
+      <ExpensesForm isloading={isLoading} />
       <ExpensesTable Expenses={expenses} loading={isLoading} />
     </Container>
   );
